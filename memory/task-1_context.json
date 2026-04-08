@@ -1,0 +1,6 @@
+{
+  "task_id": "task-1",
+  "what": "Implement a two_sum function that takes a list of integers and a target integer, returning the indices of the two numbers that sum to target. Exactly one solution exists; cannot reuse the same element.",
+  "approach": "Brute force: nested loops checking every pair O(n^2) time O(1) space \u2014 simple but slow for large inputs. Optimal: single-pass hash map storing each value mapped to its index; for each element check if complement (target - num) exists in the map O(n) time O(n) space \u2014 much faster in practice.",
+  "notes": "Return value is a list of two ints (indices). Order does not matter. The function signature should be def two_sum(nums: list[int], target: int) -> list[int]. Place implementation in solution.py."
+}

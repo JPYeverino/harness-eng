@@ -1,0 +1,16 @@
+{
+  "tasks": [
+    {
+      "id": "task-1",
+      "title": "Implement Two Sum",
+      "description": "Given an array of integers nums and an integer target, return the indices of the two numbers that add up to target. Exactly one solution exists, may not use the same element twice, return indices in any order.",
+      "done": false,
+      "dependsOn": [],
+      "completed": {
+        "planner": true,
+        "context": true,
+        "tdd": true
+      }
+    }
+  ]
+}

@@ -1,12 +1,15 @@
 {
   "task_id": "task-1",
-  "test_file": "test_two_sum.py",
-  "impl_file": "two_sum.py",
-  "decisions": [
-    "Tests (7) and the optimal hash-map implementation already existed from a prior TDD cycle \u2014 no new tests or brute-force pass were needed this run.",
-    "Brute-force-first rationale (preserved from prior cycle): nested loops are the simplest correct thing \u2014 no data structures, obvious logic, easy to verify by hand. They let the suite turn green with minimal risk before any optimisation is attempted.",
-    "Evaluated for further improvement: the only candidate was narrowing the return type annotation from `list[int]` to `tuple[int, int]`, which is more precise (function always returns exactly 2 elements; tests destructure with i, j = ...). Write was blocked by permissions so the change was not applied.",
-    "Algorithm is already at the ceiling: single-pass hash-map, O(n) time / O(n) space, dict[int, int] typed strictly (no any/unknown equivalent), raise ValueError satisfies Python control-flow checker without a dummy return.",
-    "pytest confirmed 7/7 passing after evaluation \u2014 no regressions, no behaviour changes."
+  "entries": [
+    {
+      "task_id": "task-1",
+      "test_file": "test_two_sum.py",
+      "impl_file": "solution.py",
+      "decisions": [
+        "Started brute force O(n^2) nested loops to establish passing tests first",
+        "Refactored to single-pass hash map O(n) time O(n) space \u2014 complement lookup replaces inner loop",
+        "Tests cover: basic case, answer at end, duplicate values, negatives, large input, index vs value distinction"
+      ]
+    }
   ]
 }
