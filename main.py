@@ -1,32 +1,48 @@
 import anyio
-from claude_agent_sdk import query, ClaudeAgentOptions, HookMatcher, ResultMessage
-
-
-# STEP 3: Write your hook here
-# A hook is just an async function. It receives input_data about the tool call.
-# Return {} when done (or a dict with optional "decision": "block" to cancel it).
-async def log_tool_use(input_data, tool_use_id, context):
-    print(input_data)
-    tool_name = input_data.get("tool_name", "unknown")
-    # TODO: print something useful from input_data so you can see what's happening
-    return {}
-
+import json
+from pathlib import Path
+from spec import SPEC
+from phases.planner import plan
+from phases.context import create_context
+from phases.tdd import run_tdd
 
 async def main():
-    async for message in query(
-        # STEP 4: Change this prompt to something that will trigger a tool use
-        # Try: "What files are in the current directory?"
-        prompt="Check online what day is today",
-        options=ClaudeAgentOptions(
-            allowed_tools=["Read", "Glob", "Bash"],
-            # STEP 5: Wire up the hook — uncomment this block:
-            hooks={
-                "PreToolUse": [HookMatcher(matcher=".*", hooks=[log_tool_use])]
-            }
-        ),
-    ):
-        if isinstance(message, ResultMessage):
-            print(message.result)
+    # Phase 1: plan
+    print("=== Planning ===")
+    tasks, planner_session = await plan(SPEC)
+
+    # Phase 2: context for each task — resumes from planner session
+    print("\n=== Context Creation ===")
+    contexts: dict[str, object] = {}
+    context_sessions: dict[str, str] = {}
+    for task in tasks:
+        ctx, ctx_session = await create_context(task, resume=planner_session)
+        contexts[task.id] = ctx
+        context_sessions[task.id] = ctx_session
+        print(f"  WHAT:     {ctx.what[:80]}...")
+        print(f"  APPROACH: {ctx.approach[:80]}...")
+
+    # Phase 3: TDD — resumes from context session so agent already knows the plan
+    print("\n=== TDD ===")
+    for task in tasks:
+        result = await run_tdd(contexts[task.id], cwd=".", resume=context_sessions[task.id])
+        print(f"  success:   {result.success}")
+        print(f"  test_file: {result.test_file}")
+        print(f"  impl_file: {result.impl_file}")
+        print(f"  decisions:")
+        for d in result.decisions:
+            print(f"    - {d}")
+
+        memory_file = Path("memory") / f"{task.id}_decisions.json"
+        memory_file.write_text(json.dumps({
+            "task_id":   result.task_id,
+            "test_file": result.test_file,
+            "impl_file": result.impl_file,
+            "decisions": result.decisions,
+        }, indent=2))
+        print(f"  saved → {memory_file}")
+
+    # TODO: Phase 4 — git.py  (commit, push, PR)
 
 
 anyio.run(main)
