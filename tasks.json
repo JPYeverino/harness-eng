@@ -51,6 +51,58 @@
           }
         }
       ]
+    },
+    {
+      "id": "task-2",
+      "title": "Implement Contains Duplicate",
+      "description": "Given an integer array nums, return True if any value appears at least twice, False if every element is distinct.",
+      "done": true,
+      "dependsOn": [],
+      "subtasks": [
+        {
+          "id": "task-2.planner",
+          "skill": "planner",
+          "done": true,
+          "dependsOn": [],
+          "gates": {}
+        },
+        {
+          "id": "task-2.context",
+          "skill": "context",
+          "done": true,
+          "dependsOn": [
+            "task-2.planner"
+          ],
+          "gates": {
+            "gate_task_exists": true
+          }
+        },
+        {
+          "id": "task-2.tdd",
+          "skill": "tdd",
+          "done": true,
+          "dependsOn": [
+            "task-2.context"
+          ],
+          "gates": {
+            "gate_context_exists": true,
+            "gate_has_failing_tests": true,
+            "gate_has_implementation": true
+          }
+        },
+        {
+          "id": "task-2.validator",
+          "skill": "validator",
+          "done": true,
+          "dependsOn": [
+            "task-2.tdd"
+          ],
+          "gates": {
+            "gate_tdd_done": true,
+            "gate_validation_passed": true
+          }
+        }
+      ]
     }
   ]
 }

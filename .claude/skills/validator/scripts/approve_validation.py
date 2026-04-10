@@ -34,4 +34,18 @@ if not data.get("passed"):
 data["human_approved"] = True
 val_file.write_text(json.dumps(data, indent=2))
 print(f"Approved: {val_file}")
+
+# Clean up the waiting_for_human sentinel so the Stop hook re-arms
+sentinel = Path("memory/waiting_for_human.json")
+if sentinel.exists():
+    sentinel_data = json.loads(sentinel.read_text())
+    task_ids = set(sentinel_data.get("task_ids", []))
+    task_ids.discard(task_id)
+    if task_ids:
+        sentinel_data["task_ids"] = sorted(task_ids)
+        sentinel.write_text(json.dumps(sentinel_data, indent=2))
+    else:
+        sentinel.unlink()
+    print("Stop hook re-armed.")
+
 print("Re-run the orchestrator to continue.")

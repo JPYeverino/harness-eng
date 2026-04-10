@@ -4,6 +4,11 @@ description: Run the full TDD harness — planner, context, tdd, validator — i
 allowed-tools: Read Write Bash Glob
 effort: high
 hooks:
+  Stop:
+    - matcher: ".*"
+      hooks:
+        - type: command
+          command: "python .claude/skills/orchestrator/scripts/check_tasks_done.py"
   PostToolUse:
     - matcher: ".*"
       hooks:
