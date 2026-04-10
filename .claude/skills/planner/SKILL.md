@@ -24,6 +24,7 @@ Break the spec into tasks and write them to disk.
    }
    ```
 4. Confirm `tasks.json` was written
-5. Run: `python ${CLAUDE_SKILL_DIR}/../scripts/mark_done.py task-1 planner`
+5. Run: `python ${CLAUDE_SKILL_DIR}/../scripts/scaffold_subtasks.py`
+6. Run: `python ${CLAUDE_SKILL_DIR}/../scripts/mark_done.py task-1 planner`
 
 Do not proceed to any other skill until `tasks.json` exists.

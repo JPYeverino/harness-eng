@@ -3,14 +3,54 @@
     {
       "id": "task-1",
       "title": "Implement Two Sum",
-      "description": "Given an array of integers nums and an integer target, return the indices of the two numbers that add up to target. Exactly one solution exists, may not use the same element twice, return indices in any order.",
-      "done": false,
+      "description": "Given an array of integers nums and a target integer, return indices of the two numbers that add up to target. Exactly one solution exists, same element cannot be used twice.",
+      "done": true,
       "dependsOn": [],
-      "completed": {
-        "planner": true,
-        "context": true,
-        "tdd": true
-      }
+      "subtasks": [
+        {
+          "id": "task-1.planner",
+          "skill": "planner",
+          "done": true,
+          "dependsOn": [],
+          "gates": {}
+        },
+        {
+          "id": "task-1.context",
+          "skill": "context",
+          "done": true,
+          "dependsOn": [
+            "task-1.planner"
+          ],
+          "gates": {
+            "gate_task_exists": true
+          }
+        },
+        {
+          "id": "task-1.tdd",
+          "skill": "tdd",
+          "done": true,
+          "dependsOn": [
+            "task-1.context"
+          ],
+          "gates": {
+            "gate_context_exists": true,
+            "gate_has_failing_tests": true,
+            "gate_has_implementation": true
+          }
+        },
+        {
+          "id": "task-1.validator",
+          "skill": "validator",
+          "done": true,
+          "dependsOn": [
+            "task-1.tdd"
+          ],
+          "gates": {
+            "gate_tdd_done": true,
+            "gate_validation_passed": true
+          }
+        }
+      ]
     }
   ]
 }

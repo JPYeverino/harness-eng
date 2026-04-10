@@ -8,7 +8,8 @@ async def main():
     async for message in query(
         prompt=f"The spec is:\n\n{SPEC}",
         options=ClaudeAgentOptions(
-            allowed_tools=["Read", "Write", "Bash", "Glob"],
+            allowed_tools=["Skill", "Read", "Write", "Bash", "Glob"],
+            setting_sources=["user", "project"],
         ),
     ):
         if isinstance(message, AssistantMessage):

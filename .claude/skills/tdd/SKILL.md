@@ -19,24 +19,27 @@ Run the full TDD cycle: failing tests → brute force → refactor.
 ### Step 1: Write failing tests
 - Read `memory/{task_id}_context.json` for context
 - Write test file
-- Run pytest — confirm it fails
+- Run pytest — observe the failure output, understand why it fails
+- Record the result: `python ${CLAUDE_SKILL_DIR}/scripts/record_pytest_result.py <test_file> false`
 - Do NOT proceed to step 2 until tests fail
 
 ### Step 2: Write brute force implementation
 Run the gate first:
-`python ${CLAUDE_SKILL_DIR}/scripts/gate_has_failing_tests.py <test_file>`
-- Exit 1: stop, tests are not failing — do not write implementation
+`python ${CLAUDE_SKILL_DIR}/scripts/gate_has_failing_tests.py <test_file> <task_id>`
+- Exit 1: stop — you have not recorded a failing pytest result yet
 
 - Write the simplest correct implementation (brute force)
-- Run pytest — confirm tests pass
+- Run pytest — observe that tests pass
+- Record the result: `python ${CLAUDE_SKILL_DIR}/scripts/record_pytest_result.py <test_file> true`
 
 ### Step 3: Refactor to optimal
 Run the gate first:
-`python ${CLAUDE_SKILL_DIR}/scripts/gate_has_implementation.py <impl_file> <test_file>`
-- Exit 1: stop, implementation missing or tests not passing — do not refactor
+`python ${CLAUDE_SKILL_DIR}/scripts/gate_has_implementation.py <impl_file> <test_file> <task_id>`
+- Exit 1: stop — you have not recorded a passing pytest result yet
 
 - Refactor to the optimal solution
 - Run pytest — confirm tests still pass
+- Record the result: `python ${CLAUDE_SKILL_DIR}/scripts/record_pytest_result.py <test_file> true`
 
 ### Step 4: Write decisions
 `python ${CLAUDE_SKILL_DIR}/scripts/write_decisions.py '<json>'`
