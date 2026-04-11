@@ -20,18 +20,18 @@ if not Path(test_file).exists():
     print(f"BLOCKED: {test_file} does not exist — write tests first")
     sys.exit(1)
 
-result_file = Path("memory/pytest_result.json")
+result_file = Path("memory/test_result.json")
 if not result_file.exists():
-    print("BLOCKED: memory/pytest_result.json not found — run pytest and record the result first")
+    print("BLOCKED: memory/test_result.json not found — run tests and record the result first")
     sys.exit(1)
 
 data = json.loads(result_file.read_text())
 if data.get("passed") is not False:
-    print("BLOCKED: pytest_result.json does not show a failure — tests must fail before writing implementation")
+    print("BLOCKED: test_result.json does not show a failure — tests must fail before writing implementation")
     sys.exit(1)
 
 if data.get("test_file") != test_file:
-    print(f"BLOCKED: pytest_result.json is for '{data.get('test_file')}', not '{test_file}' — re-run pytest for the correct file")
+    print(f"BLOCKED: test_result.json is for '{data.get('test_file')}', not '{test_file}' — re-run tests for the correct file")
     sys.exit(1)
 
 subprocess.run(

@@ -3,12 +3,16 @@
   "entries": [
     {
       "task_id": "task-1",
-      "test_file": "test_two_sum.py",
-      "impl_file": "solution.py",
+      "test_file": "test_dashboard.py",
+      "impl_file": "dashboard.py",
       "decisions": [
-        "Started brute force O(n^2) nested loops to establish passing tests first",
-        "Refactored to single-pass hash map O(n) time O(n) space \u2014 complement lookup replaces inner loop",
-        "Tests cover: basic case, answer at end, duplicate values, negatives, large input, index vs value distinction"
+        "Used create_app(root) factory so tests can inject a tmp_path root without monkeypatching global state",
+        "_read_json helper returns None for missing files, enabling partial-memory responses",
+        "GET /api/memory returns only keys that exist; 404 only when all three files are absent",
+        "POST /api/approve reads then writes validation JSON in-place to preserve existing fields",
+        "Sentinel waiting_for_human.json deleted only if it exists (unlink guarded by exists())",
+        "TestClient constructed per test class via client fixture; tmp_root+monkeypatch.chdir isolates each test",
+        "Brute-force was already clean; refactor collapsed get_memory conditionals into a dict comprehension"
       ]
     }
   ]

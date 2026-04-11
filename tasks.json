@@ -2,8 +2,13 @@
   "tasks": [
     {
       "id": "task-1",
-      "title": "Implement Two Sum",
-      "description": "Given an array of integers nums and a target integer, return indices of the two numbers that add up to target. Exactly one solution exists, same element cannot be used twice.",
+      "title": "Harness Dashboard",
+      "description": "Build a FastAPI + vanilla JS local web dashboard that renders tasks.json, memory cards, a run log timeline, and HITL approval UI. Single HTML file frontend, no build step, all state from filesystem.",
+      "stack": {
+        "language": "Python",
+        "test_runner": "pytest",
+        "test_command": "pytest"
+      },
       "done": true,
       "dependsOn": [],
       "subtasks": [
@@ -44,58 +49,6 @@
           "done": true,
           "dependsOn": [
             "task-1.tdd"
-          ],
-          "gates": {
-            "gate_tdd_done": true,
-            "gate_validation_passed": true
-          }
-        }
-      ]
-    },
-    {
-      "id": "task-2",
-      "title": "Implement Contains Duplicate",
-      "description": "Given an integer array nums, return True if any value appears at least twice, False if every element is distinct.",
-      "done": true,
-      "dependsOn": [],
-      "subtasks": [
-        {
-          "id": "task-2.planner",
-          "skill": "planner",
-          "done": true,
-          "dependsOn": [],
-          "gates": {}
-        },
-        {
-          "id": "task-2.context",
-          "skill": "context",
-          "done": true,
-          "dependsOn": [
-            "task-2.planner"
-          ],
-          "gates": {
-            "gate_task_exists": true
-          }
-        },
-        {
-          "id": "task-2.tdd",
-          "skill": "tdd",
-          "done": true,
-          "dependsOn": [
-            "task-2.context"
-          ],
-          "gates": {
-            "gate_context_exists": true,
-            "gate_has_failing_tests": true,
-            "gate_has_implementation": true
-          }
-        },
-        {
-          "id": "task-2.validator",
-          "skill": "validator",
-          "done": true,
-          "dependsOn": [
-            "task-2.tdd"
           ],
           "gates": {
             "gate_tdd_done": true,
