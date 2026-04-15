@@ -54,7 +54,23 @@ For each check, produce `passed: true/false` and a `notes` string:
 - Trace through the impl mentally for at least the example case
 - Does the impl handle the edge cases the tests exercise?
 
-### Step 3: E2E validation (skip if `stack.e2e_runner` is absent)
+### Step 3: Write a plain-language summary
+
+Write a `summary` string: 1–2 sentences in plain English describing what was built
+and the quality outcome. Write for the person who requested the output — not a
+technical audience. Do not mention task IDs, gate names, or internal tooling.
+
+Good examples:
+- "Five LinkedIn posts written in your brand voice, all under 200 words with a
+  clear call-to-action in each."
+- "Reject button added to the dashboard so you can send work back for revision,
+  and the approval flow now handles multiple tasks correctly."
+
+Bad examples (too technical):
+- "gate_validation_passed stamped for task-2"
+- "4/4 checks passed: spec_coverage, constraint_compliance, test_validity, impl_correctness"
+
+### Step 4: E2E validation (skip if `stack.e2e_runner` is absent)
 
 Read `stack.dev_url` and `stack.dev_command` from `tasks.json`.
 
@@ -79,11 +95,11 @@ Read the snapshot output. Check each item from the spec's Deliverables section:
 Produce an `e2e` check: `passed: true/false` and `notes` describing what was found.
 Add any e2e failures to `findings`.
 
-### Step 4: Write findings
+### Step 5: Write findings
 - `findings` is a list of strings describing any problem found — empty if all passed
 - `passed` (top-level) is `true` only if ALL checks passed (unit + e2e if run)
 
-### Step 5: Record validation
+### Step 6: Record validation
 `python .claude/skills/validator/scripts/write_validation.py '<json>'`
 
 where `<json>` is:
@@ -91,6 +107,7 @@ where `<json>` is:
 {
   "task_id": "...",
   "passed": true,
+  "summary": "Plain-language description of what was built and the quality outcome.",
   "checks": {
     "spec_coverage":         { "passed": true, "notes": "..." },
     "constraint_compliance": { "passed": true, "notes": "..." },
@@ -106,12 +123,12 @@ The `e2e` key is omitted if `stack.e2e_runner` is absent.
 
 If the script exits 1 with "already approved" — the validation was already written and approved by a human. Proceed directly to the gate.
 
-### Step 5: Gate — wait for human approval
+### Step 7: Gate — wait for human approval
 `python .claude/skills/validator/scripts/gate_validation_passed.py <task_id>`
 - Exit 1: blocked — follow the printed instructions to approve
 - Exit 0: approved, proceed
 
-### Step 6: Mark done
+### Step 8: Mark done
 `python .claude/skills/scripts/mark_done.py <task_id> validator`
 
 ## Rules

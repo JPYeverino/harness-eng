@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Harness Results</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: 'Fira Sans', sans-serif; }
+    h1, h2, h3, .font-mono { font-family: 'Fira Code', monospace; }
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+    /* Markdown prose styles */
+    .prose p   { margin-bottom: 0.85rem; line-height: 1.65; }
+    .prose strong { font-weight: 600; color: #164E63; }
+    .prose ul  { list-style: disc; padding-left: 1.4rem; margin-bottom: 0.85rem; }
+    .prose li  { margin-bottom: 0.3rem; }
+    .prose a   { color: #0891B2; text-decoration: underline; }
+    .prose hr  { border-color: #A5F3FC; margin: 1rem 0; }
+    /* Step connector line */
+    .step-connector { flex: 1; height: 2px; background: #A5F3FC; margin: 0 4px; align-self: center; }
+    .step-connector.done { background: #0891B2; }
+  </style>
+</head>
+<body class="bg-[#ECFEFF] text-[#164E63] min-h-screen">
+
+  <!-- Header -->
+  <header class="bg-white border-b border-[#A5F3FC] px-6 py-4 flex items-center justify-between sticky top-0 z-10 shadow-sm">
+    <div class="flex items-center gap-3">
+      <div id="status-dot" class="w-2.5 h-2.5 rounded-full bg-[#22D3EE] transition-colors duration-300"></div>
+      <span id="header-title" class="font-mono text-sm font-semibold text-[#164E63]">Harness</span>
+    </div>
+    <span id="status-badge" class="text-xs font-semibold px-3 py-1 rounded-full bg-[#ECFEFF] text-[#0891B2] border border-[#A5F3FC]">Loading…</span>
+  </header>
+
+  <main class="max-w-3xl mx-auto px-4 py-10 space-y-8">
+
+    <!-- RESULT HERO (shown when done) -->
+    <section id="result-section" class="hidden">
+      <!-- Run summary block -->
+      <div id="run-summary" class="mb-5 text-center space-y-2"></div>
+
+      <!-- Quality summary bar -->
+      <div id="quality-bar" class="flex items-center gap-3 mb-4 flex-wrap">
+        <span class="flex items-center gap-1.5 text-sm font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+          Ready
+        </span>
+        <span id="checks-badge" class="text-sm text-[#0891B2] font-medium"></span>
+        <span id="approved-badge" class="hidden text-sm font-medium text-[#0891B2]">· Approved</span>
+        <span id="rejected-badge" class="hidden text-sm font-medium text-gray-500">· Rejected</span>
+        <!-- Run-level approve button -->
+        <button id="run-approve-btn" class="hidden ml-auto text-sm font-semibold px-4 py-1.5 rounded-full bg-[#F97316] text-white hover:bg-orange-500 transition-colors duration-150 cursor-pointer focus:outline-none focus:ring-2 focus:ring-orange-300">
+          Approve
+        </button>
+        <!-- Run-level reject button -->
+        <button id="run-reject-btn" class="hidden text-sm font-semibold px-4 py-1.5 rounded-full bg-white border border-[#0891B2] text-[#0891B2] hover:bg-[#ECFEFF] transition-colors duration-150 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#A5F3FC]">
+          Reject
+        </button>
+      </div>
+
+      <!-- Deliverable card -->
+      <div class="bg-white rounded-2xl border border-[#A5F3FC] shadow-sm overflow-hidden">
+        <div class="flex items-center justify-between px-5 py-3 border-b border-[#E0F7FA] bg-[#F0FDFE]">
+          <span id="deliverable-filename" class="font-mono text-xs text-[#0891B2] font-medium"></span>
+          <a id="header-download-link" class="hidden text-xs font-semibold text-[#0891B2] hover:underline" download>Download</a>
+        </div>
+        <div id="deliverable-content" class="prose px-6 py-5 text-[#164E63] text-sm leading-relaxed"></div>
+        <div id="deliverable-download" class="hidden px-6 py-5 flex items-center gap-3">
+          <a id="download-link" class="text-sm font-semibold px-4 py-2 rounded-full bg-[#0891B2] text-white hover:bg-[#0e7490] transition-colors duration-150" download>Download file</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- PIPELINE TRACKER (always visible) -->
+    <section>
+      <h2 class="font-mono text-xs font-semibold uppercase tracking-widest text-[#0891B2] mb-4">
+        <span id="pipeline-heading">Pipeline</span>
+      </h2>
+      <div id="steps-container" class="flex items-start gap-1">
+        <!-- Steps rendered by JS -->
+      </div>
+    </section>
+
+    <!-- ACTIVITY LOG (collapsible) -->
+    <section>
+      <button
+        id="log-toggle"
+        class="w-full flex items-center justify-between font-mono text-xs font-semibold uppercase tracking-widest text-[#0891B2] mb-3 cursor-pointer focus:outline-none"
+        aria-expanded="false"
+      >
+        <span>Activity Log</span>
+        <svg id="log-chevron" class="w-4 h-4 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+        </svg>
+      </button>
+      <div id="log-container" class="hidden space-y-1.5">
+        <div id="log-entries"><p class="text-sm text-[#64B5C4]">No activity yet.</p></div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // ── Config ────────────────────────────────────────────────────────────────
+    const SKILL_LABELS = {
+      planner:   'Planning',
+      context:   'Understanding',
+      tdd:       'Writing & Testing',
+      validator: 'Reviewing',
+    };
+
+    // ── State ─────────────────────────────────────────────────────────────────
+    let lastAllDone = false;
+    let deliverableLoaded = false;
+    let approvalPollerStarted = false;
+    let runTaskIds = [];
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+    const $ = id => document.getElementById(id);
+    function trunc(val, n = 90) {
+      const s = typeof val === 'string' ? val : JSON.stringify(val ?? '');
+      return s.length > n ? s.slice(0, n) + '…' : s;
+    }
+
+    // ── Steps renderer ────────────────────────────────────────────────────────
+    function renderSteps(subtasks) {
+      const container = $('steps-container');
+      container.innerHTML = '';
+      subtasks.forEach((sub, i) => {
+        const label = SKILL_LABELS[sub.skill] ?? sub.skill;
+        const done  = sub.done;
+        // Determine if in progress (prev done, this not done)
+        const prev  = subtasks[i - 1];
+        const inProgress = !done && (!prev || prev.done);
+
+        const step = document.createElement('div');
+        step.className = 'flex flex-col items-center gap-1.5 flex-1 min-w-0';
+        step.innerHTML = `
+          <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm flex-shrink-0 transition-colors duration-300
+            ${done        ? 'bg-[#0891B2] text-white' :
+              inProgress  ? 'bg-[#F97316] text-white animate-pulse' :
+                            'bg-white border-2 border-[#A5F3FC] text-[#A5F3FC]'}">
+            ${done
+              ? `<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>`
+              : inProgress
+                ? `<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/></svg>`
+                : `<span class="w-1.5 h-1.5 rounded-full bg-[#A5F3FC] block"></span>`
+            }
+          </div>
+          <span class="text-xs text-center font-medium leading-tight ${done ? 'text-[#0891B2]' : inProgress ? 'text-[#F97316]' : 'text-[#A5F3FC]'}">${label}</span>
+        `;
+
+        container.appendChild(step);
+
+        // Connector between steps
+        if (i < subtasks.length - 1) {
+          const line = document.createElement('div');
+          line.className = `step-connector mt-3 ${done ? 'done' : ''}`;
+          container.appendChild(line);
+        }
+      });
+    }
+
+    // ── Deliverable ───────────────────────────────────────────────────────────
+    async function loadDeliverable(taskId) {
+      if (deliverableLoaded) return;
+      try {
+        const r = await fetch(`/api/deliverable/${taskId}`);
+        if (!r.ok) return;
+        const { filename, type, content, mime_type } = await r.json();
+        $('deliverable-filename').textContent = filename;
+
+        if (type === 'binary') {
+          // Decode base64 → Uint8Array → Blob → object URL
+          const binary = atob(content);
+          const bytes = new Uint8Array(binary.length);
+          for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+          const blob = new Blob([bytes], { type: mime_type || 'application/octet-stream' });
+          const url = URL.createObjectURL(blob);
+
+          const dlLink = $('download-link');
+          dlLink.href = url;
+          dlLink.download = filename;
+          $('deliverable-download').classList.remove('hidden');
+
+          const headerLink = $('header-download-link');
+          headerLink.href = url;
+          headerLink.download = filename;
+          headerLink.classList.remove('hidden');
+        } else {
+          $('deliverable-content').innerHTML = marked.parse(content);
+
+          // Text blob for header download link
+          const blob = new Blob([content], { type: 'text/plain' });
+          const url = URL.createObjectURL(blob);
+          const headerLink = $('header-download-link');
+          headerLink.href = url;
+          headerLink.download = filename;
+          headerLink.classList.remove('hidden');
+        }
+
+        deliverableLoaded = true;
+      } catch { /* retry next poll */ }
+    }
+
+    // ── Run-level validation / approval ──────────────────────────────────────
+    async function loadRun() {
+      try {
+        const r = await fetch('/api/run');
+        if (!r.ok) return;
+        const run = await r.json();
+
+        runTaskIds = run.task_ids || [];
+
+        // Summary block
+        const summaryEl = $('run-summary');
+        if (run.summaries && run.summaries.length) {
+          summaryEl.innerHTML = run.summaries
+            .map(s => `<p class="text-base text-[#164E63] leading-relaxed">${s}</p>`)
+            .join('');
+        }
+
+        // Checks badge
+        $('checks-badge').textContent = `${run.checks_passed}/${run.total_checks} quality checks`;
+
+        if (run.all_approved) {
+          $('approved-badge').classList.remove('hidden');
+          $('run-approve-btn').classList.add('hidden');
+          $('run-reject-btn').classList.add('hidden');
+        } else if (run.any_rejected) {
+          $('rejected-badge').classList.remove('hidden');
+          $('run-approve-btn').classList.add('hidden');
+          $('run-reject-btn').classList.add('hidden');
+        } else if (run.awaiting_approval) {
+          $('approved-badge').classList.add('hidden');
+          $('rejected-badge').classList.add('hidden');
+          $('run-approve-btn').classList.remove('hidden');
+          $('run-reject-btn').classList.remove('hidden');
+        }
+      } catch { /* ignore */ }
+    }
+
+    async function approveRun() {
+      const btn = $('run-approve-btn');
+      btn.disabled = true;
+      btn.textContent = 'Approving…';
+      try {
+        for (const tid of runTaskIds) {
+          await fetch(`/api/approve/${tid}`, { method: 'POST' });
+        }
+        $('approved-badge').classList.remove('hidden');
+        btn.classList.add('hidden');
+        $('run-reject-btn').classList.add('hidden');
+      } catch {
+        btn.disabled = false;
+        btn.textContent = 'Approve';
+      }
+    }
+
+    async function rejectRun() {
+      const btn = $('run-reject-btn');
+      btn.disabled = true;
+      btn.textContent = 'Rejecting…';
+      try {
+        for (const tid of runTaskIds) {
+          await fetch(`/api/reject/${tid}`, { method: 'POST' });
+        }
+        $('rejected-badge').classList.remove('hidden');
+        btn.classList.add('hidden');
+        $('run-approve-btn').classList.add('hidden');
+      } catch {
+        btn.disabled = false;
+        btn.textContent = 'Reject';
+      }
+    }
+
+    // ── Logs ──────────────────────────────────────────────────────────────────
+    async function loadLogs() {
+      try {
+        const r = await fetch('/api/logs');
+        if (!r.ok) return;
+        const entries = await r.json();
+        const container = $('log-entries');
+        if (entries.length === 0) {
+          container.innerHTML = '<p class="text-sm text-[#64B5C4]">No activity yet.</p>';
+          return;
+        }
+        container.innerHTML = entries.slice(-40).reverse().map(e => `
+          <div class="flex gap-3 items-start text-xs py-1.5 px-3 rounded-lg hover:bg-[#E0F7FA] transition-colors duration-150">
+            <span class="font-mono text-[#A5F3FC] flex-shrink-0 tabular-nums pt-0.5">${(e.ts || e.timestamp || '').slice(11, 19)}</span>
+            <span class="font-mono font-semibold text-[#0891B2] flex-shrink-0 w-16 truncate">${e.tool || ''}</span>
+            <span class="text-[#164E63] truncate">${trunc(e.input, 80)}</span>
+          </div>`).join('');
+      } catch { /* ignore */ }
+    }
+
+    // ── Poll ──────────────────────────────────────────────────────────────────
+    async function poll() {
+      const dot = $('status-dot');
+      try {
+        const r = await fetch('/api/tasks');
+        if (!r.ok) { dot.className = 'w-2.5 h-2.5 rounded-full bg-red-400 transition-colors duration-300'; return; }
+        dot.className = 'w-2.5 h-2.5 rounded-full bg-[#22D3EE] transition-colors duration-300';
+
+        const data = await r.json();
+        const tasks = data.tasks || [];
+        const allDone = tasks.length > 0 && tasks.every(t => t.done);
+        const anyTask = tasks[0];
+
+        // Header
+        $('header-title').textContent = anyTask ? anyTask.title : 'Harness';
+        $('status-badge').textContent = allDone ? 'Completed' : tasks.length ? 'In Progress' : 'Waiting…';
+        $('status-badge').className = `text-xs font-semibold px-3 py-1 rounded-full border ${
+          allDone ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+          tasks.length ? 'bg-amber-50 text-amber-700 border-amber-200' :
+          'bg-[#ECFEFF] text-[#0891B2] border-[#A5F3FC]'
+        }`;
+
+        // Pipeline steps
+        if (anyTask?.subtasks?.length) {
+          $('pipeline-heading').textContent = allDone ? 'How it was made' : 'Pipeline';
+          renderSteps(anyTask.subtasks);
+        }
+
+        // Result section — show when done OR when waiting for human approval
+        const validatorSub = anyTask?.subtasks?.find(s => s.skill === 'validator');
+        const awaitingApproval = validatorSub && validatorSub.gates?.gate_tdd_done && !validatorSub.done;
+        if (anyTask && (allDone || awaitingApproval)) {
+          $('result-section').classList.remove('hidden');
+          await loadDeliverable(anyTask.id);
+          await loadRun();
+          // Wire run-level buttons once
+          if (!approvalPollerStarted) {
+            $('run-approve-btn').addEventListener('click', approveRun);
+            $('run-reject-btn').addEventListener('click', rejectRun);
+            approvalPollerStarted = true;
+          }
+        }
+
+      } catch {
+        $('status-dot').className = 'w-2.5 h-2.5 rounded-full bg-red-400 transition-colors duration-300';
+      }
+      loadLogs();
+    }
+
+    // ── Log toggle ────────────────────────────────────────────────────────────
+    $('log-toggle').addEventListener('click', () => {
+      const container = $('log-container');
+      const chevron   = $('log-chevron');
+      const open = container.classList.toggle('hidden');
+      $('log-toggle').setAttribute('aria-expanded', String(!open));
+      chevron.style.transform = open ? '' : 'rotate(180deg)';
+    });
+
+    // ── Init ──────────────────────────────────────────────────────────────────
+    poll();
+    setInterval(poll, 2000);
+  </script>
+</body>
+</html>

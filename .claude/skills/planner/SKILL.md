@@ -13,10 +13,16 @@ Break the spec into tasks and write them to disk.
 ## Steps
 
 1. Read the spec from `spec.md`
-2. Produce exactly one task covering the full implementation
-3. Detect the stack from the spec. Set all stack fields present in the spec — at minimum `language`, `test_runner`, `test_command`. If the spec includes `e2e_runner`, `dev_url`, and `dev_command`, include those too.
+2. Break the spec into as many tasks as it naturally warrants. Rules:
+   - Each task must be independently testable with a single clear deliverable
+   - Tasks that touch the same file or share state should be one task
+   - Tasks with no dependency on each other can be separate tasks
+   - Use one task only if the spec is truly atomic
+   - Assign sequential IDs: `task-1`, `task-2`, `task-3`, etc.
+   - Set `dependsOn` to reflect real dependencies (e.g. `["task-1"]` if task-2 requires task-1's output)
+3. Detect the stack from the spec. Set all stack fields present in the spec — at minimum `language`, `test_runner`, `test_command`. If the spec includes `e2e_runner`, `dev_url`, and `dev_command`, include those too. All tasks share the same stack.
 4. Run: `python ${CLAUDE_SKILL_DIR}/scripts/write_tasks.py '<json>'`
-   where `<json>` is:
+   where `<json>` is an array of all tasks:
    ```json
    {
      "tasks": [
@@ -24,23 +30,25 @@ Break the spec into tasks and write them to disk.
          "id": "task-1",
          "title": "...",
          "description": "...",
-         "stack": {
-           "language": "...",
-           "test_runner": "...",
-           "test_command": "...",
-           "e2e_runner": "...",
-           "dev_url": "...",
-           "dev_command": "..."
-         },
+         "stack": { "language": "...", "test_runner": "...", "test_command": "..." },
          "done": false,
          "dependsOn": []
+       },
+       {
+         "id": "task-2",
+         "title": "...",
+         "description": "...",
+         "stack": { "language": "...", "test_runner": "...", "test_command": "..." },
+         "done": false,
+         "dependsOn": ["task-1"]
        }
      ]
    }
    ```
-   Omit `e2e_runner`, `dev_url`, and `dev_command` if the spec does not define them.
-4. Confirm `tasks.json` was written
+   Omit `e2e_runner`, `dev_url`, and `dev_command` from stack if the spec does not define them.
+5. Confirm `tasks.json` was written
 6. Run: `python ${CLAUDE_SKILL_DIR}/../scripts/scaffold_subtasks.py`
-7. Run: `python ${CLAUDE_SKILL_DIR}/../scripts/mark_done.py task-1 planner`
+7. For every task ID in the tasks array, run:
+   `python ${CLAUDE_SKILL_DIR}/../scripts/mark_done.py <task-id> planner`
 
 Do not proceed to any other skill until `tasks.json` exists.

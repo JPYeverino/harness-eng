@@ -44,6 +44,7 @@ Path("memory").mkdir(exist_ok=True)
 record = {
     "task_id": task_id,
     "passed": bool(data.get("passed")),
+    "summary": data.get("summary") or "",
     "timestamp": datetime.now(timezone.utc).isoformat(),
     "checks": checks,
     "findings": data.get("findings", []),

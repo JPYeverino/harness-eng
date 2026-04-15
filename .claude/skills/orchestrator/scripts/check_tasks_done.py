@@ -3,12 +3,13 @@ Stop hook — blocks the agent from stopping if any task is not done.
 Exit 0: all tasks complete, allow stop.
 Exit 2: pending tasks found, inject continuation prompt.
 
-Respects a waiting_for_human.json sentinel: if it exists and lists a
-pending task id, Claude is intentionally blocked on a human gate — let
-it stop quietly rather than re-injecting and looping.
+When waiting_for_human.json exists, blocks in a poll loop until the
+dashboard approves (deletes the sentinel + sets human_approved), then
+injects a continuation prompt so the agent resumes without a manual re-run.
 """
 import json
 import sys
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -44,13 +45,53 @@ if sentinel.exists():
     waiting_ids = set(waiting.get("task_ids", []))
     pending_ids = {t["id"] for t in pending}
     if pending_ids <= waiting_ids:
-        # All pending tasks are blocked on human gates — let Claude stop.
         print(
             f"Waiting for human approval on: {', '.join(sorted(waiting_ids))}. "
-            "Run the approve script, then re-run the orchestrator.",
+            "Approve via the dashboard — this will resume automatically.",
             file=sys.stderr,
         )
-        sys.exit(0)
+        # Block until approval arrives. Three exit conditions:
+        # 1. All tasks approved
+        # 2. Any task rejected
+        # 3. human_approved already set before sentinel was written (timing edge case)
+        def _all_approved():
+            return all(
+                json.loads(Path(f"memory/{tid}_validation.json").read_text()).get("human_approved", False)
+                for tid in waiting_ids
+                if Path(f"memory/{tid}_validation.json").exists()
+            )
+
+        def _any_rejected():
+            return any(
+                json.loads(Path(f"memory/{tid}_validation.json").read_text()).get("human_rejected", False)
+                for tid in waiting_ids
+                if Path(f"memory/{tid}_validation.json").exists()
+            )
+
+        while sentinel.exists() and not _all_approved() and not _any_rejected():
+            time.sleep(2)
+
+        if _any_rejected():
+            rejected_ids = [
+                tid for tid in sorted(waiting_ids)
+                if Path(f"memory/{tid}_validation.json").exists()
+                and json.loads(Path(f"memory/{tid}_validation.json").read_text()).get("human_rejected", False)
+            ]
+            cmds = " && ".join(f"python cleanup.py {tid} --rejected" for tid in rejected_ids)
+            msg = f"Task(s) rejected. Run exactly this and nothing else: {cmds}"
+            print(msg)
+            print(msg, file=sys.stderr)
+            sys.exit(2)
+
+        # Sentinel gone / all approved — inject continuation so the agent re-runs the validator gate.
+        cmds = " && ".join(
+            f"python .claude/skills/validator/scripts/gate_validation_passed.py {tid} && python .claude/skills/scripts/mark_done.py {tid} validator && python .claude/skills/scripts/mark_done.py {tid} && python cleanup.py {tid} --approved"
+            for tid in sorted(waiting_ids)
+        )
+        msg = f"Human approved. Run exactly this and nothing else: {cmds}"
+        print(msg)
+        print(msg, file=sys.stderr)
+        sys.exit(2)
 
 ids = ", ".join(t["id"] for t in pending)
 msg = f"Tasks not yet complete: {ids}. Run the orchestrator skill for each pending task."

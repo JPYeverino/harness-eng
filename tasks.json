@@ -2,12 +2,12 @@
   "tasks": [
     {
       "id": "task-1",
-      "title": "Harness Dashboard",
-      "description": "Build a FastAPI + vanilla JS local web dashboard that renders tasks.json, memory cards, a run log timeline, and HITL approval UI. Single HTML file frontend, no build step, all state from filesystem.",
+      "title": "write_validation.py summary field + validator SKILL.md",
+      "description": "Add optional summary field to write_validation.py payload and record. Update validator/SKILL.md with Step 3 plain-language summary writing instruction.",
       "stack": {
         "language": "Python",
         "test_runner": "pytest",
-        "test_command": "pytest"
+        "test_command": "pytest -v"
       },
       "done": true,
       "dependsOn": [],
@@ -53,6 +53,122 @@
           "gates": {
             "gate_tdd_done": true,
             "gate_validation_passed": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "task-2",
+      "title": "GET /api/run endpoint in dashboard.py",
+      "description": "Add GET /api/run endpoint that aggregates task summaries, check counts, and approval state from tasks.json and memory validation files.",
+      "stack": {
+        "language": "Python",
+        "test_runner": "pytest",
+        "test_command": "pytest -v"
+      },
+      "done": false,
+      "dependsOn": [],
+      "subtasks": [
+        {
+          "id": "task-2.planner",
+          "skill": "planner",
+          "done": true,
+          "dependsOn": [],
+          "gates": {}
+        },
+        {
+          "id": "task-2.context",
+          "skill": "context",
+          "done": true,
+          "dependsOn": [
+            "task-2.planner"
+          ],
+          "gates": {
+            "gate_task_exists": true
+          }
+        },
+        {
+          "id": "task-2.tdd",
+          "skill": "tdd",
+          "done": true,
+          "dependsOn": [
+            "task-2.context"
+          ],
+          "gates": {
+            "gate_context_exists": true,
+            "gate_has_failing_tests": true,
+            "gate_has_implementation": true
+          }
+        },
+        {
+          "id": "task-2.validator",
+          "skill": "validator",
+          "done": false,
+          "dependsOn": [
+            "task-2.tdd"
+          ],
+          "gates": {
+            "gate_tdd_done": true,
+            "gate_validation_passed": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "task-3",
+      "title": "dashboard.html run-level result hero",
+      "description": "Replace result hero with run-summary block, aggregated quality line, and run-level Approve/Reject buttons. Poll /api/run instead of per-task endpoints.",
+      "stack": {
+        "language": "Python",
+        "test_runner": "pytest",
+        "test_command": "pytest -v"
+      },
+      "done": false,
+      "dependsOn": [
+        "task-2"
+      ],
+      "subtasks": [
+        {
+          "id": "task-3.planner",
+          "skill": "planner",
+          "done": true,
+          "dependsOn": [],
+          "gates": {}
+        },
+        {
+          "id": "task-3.context",
+          "skill": "context",
+          "done": true,
+          "dependsOn": [
+            "task-3.planner"
+          ],
+          "gates": {
+            "gate_task_exists": true
+          }
+        },
+        {
+          "id": "task-3.tdd",
+          "skill": "tdd",
+          "done": true,
+          "dependsOn": [
+            "task-3.context"
+          ],
+          "gates": {
+            "gate_context_exists": true,
+            "gate_has_failing_tests": true,
+            "gate_has_implementation": true
+          }
+        },
+        {
+          "id": "task-3.validator",
+          "skill": "validator",
+          "done": false,
+          "dependsOn": [
+            "task-3.tdd"
+          ],
+          "gates": {
+            "gate_tdd_done": true,
+            "gate_validation_passed": false
           }
         }
       ]
