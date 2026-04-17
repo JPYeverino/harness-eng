@@ -19,6 +19,7 @@ Run the full TDD cycle: failing tests → brute force → refactor.
 ### Step 1: Write failing tests
 - Read `memory/{task_id}_context.json` for context
 - Read `tasks.json` and find the task's `stack.test_command`
+- If `memory/planner_observations.json` exists, read it — use the observations as additional context for the file(s) you are about to modify
 - Write test file
 - Run the test command — observe the failure output, understand why it fails
 - Record the result: `python ${CLAUDE_SKILL_DIR}/scripts/record_test_result.py <test_file> false`

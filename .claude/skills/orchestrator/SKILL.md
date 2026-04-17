@@ -20,6 +20,12 @@ hooks:
 
 Run these skills in order. Each skill has gates — if a gate fails, stop and report why.
 
+## Step 0: Validate spec
+
+Run: `python check_spec.py`
+- Exit 1: spec is invalid — show the findings to the user, do not proceed
+- Exit 0: spec is valid, continue
+
 ## Order
 
 1. Load and follow `.claude/skills/planner/SKILL.md`
