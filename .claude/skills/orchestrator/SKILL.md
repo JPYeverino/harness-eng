@@ -26,6 +26,14 @@ Run: `python check_spec.py`
 - Exit 1: spec is invalid — show the findings to the user, do not proceed
 - Exit 0: spec is valid, continue
 
+## Step 0b: Boyscout
+
+Load and follow `.claude/skills/boyscout/SKILL.md`
+
+After boyscout completes, run: `python .claude/skills/boyscout/scripts/gate_boyscout_clear.py`
+- Exit 1: review pending — show instructions to the user, do not proceed
+- Exit 0: approved, continue to planner
+
 ## Order
 
 1. Load and follow `.claude/skills/planner/SKILL.md`
