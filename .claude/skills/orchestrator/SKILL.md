@@ -40,6 +40,7 @@ After boyscout completes, run: `python .claude/skills/boyscout/scripts/gate_boys
 2. Load and follow `.claude/skills/context/SKILL.md`
 3. Load and follow `.claude/skills/tdd/SKILL.md`
 4. Load and follow `.claude/skills/validator/SKILL.md`
+5. Load and follow `.claude/skills/docs-updater/SKILL.md`
 
 ## Rules
 

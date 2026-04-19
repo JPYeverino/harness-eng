@@ -84,11 +84,10 @@ if sentinel.exists():
             sys.exit(2)
 
         # Sentinel gone / all approved — inject continuation so the agent re-runs the validator gate.
-        per_task = " && ".join(
+        cmds = " && ".join(
             f"python .claude/skills/validator/scripts/gate_validation_passed.py {tid} && python .claude/skills/scripts/mark_done.py {tid} validator && python .claude/skills/scripts/mark_done.py {tid} && python cleanup.py {tid} --approved"
             for tid in sorted(waiting_ids)
         )
-        cmds = f"{per_task} && python .claude/skills/orchestrator/scripts/update_docs.py"
         msg = f"Human approved. Run exactly this and nothing else: {cmds}"
         print(msg)
         print(msg, file=sys.stderr)
